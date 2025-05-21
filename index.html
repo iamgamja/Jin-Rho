@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
+		<title>Q#으로 양자 컴퓨팅을 해보자</title>
 
 		<link rel="stylesheet" href="dist/reset.css">
 		<link rel="stylesheet" href="dist/reveal.css">
@@ -16,8 +16,115 @@
 	<body>
 		<div class="reveal">
 			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
+				<section data-markdown>
+					<textarea data-template>
+						# Q#으로 양자 컴퓨팅을 해보자
+						### 30206 김주원
+
+						---
+                        
+                        ## 왜?
+                        「나 없이는 존재하지 않는 세상」에서 양자론과 관련된 내용을 보고 양자 컴퓨팅에 대해 탐구해 보기로 했다.
+                        
+                        ---
+
+						## Q#이란?
+						- 퀀텀 컴퓨팅(양자 컴퓨팅)을 위한 프로그래밍 언어 <!-- .element: class="fragment" -->
+						- 마이크로소프트가 개발함 <!-- .element: class="fragment" -->
+
+						---
+
+						## Q#의 특징
+						- 큐비트(Qubit)를 이용한다 <!-- .element: class="fragment" -->
+							- 고전 비트: 0이나 1 둘 중 하나
+							- 큐비트: 0과 1이 중첩되어 있을 수 있다
+							- 이 중첩 상태는 관측시 붕괴한다 <!-- .element: class="fragment" -->
+
+						---
+
+						## 예시1: 중첩 상태를 만들어 관측하다
+
+						```Q# [|2|3|4|6]
+						operation MeasureHadamard() : Result {
+							using (q = Qubit()) {
+								H(q);           // Hadamard 게이트 적용 (|0⟩ → 중첩 상태)
+								let result = M(q); // 측정 (0 또는 1 결과 나옴)
+								Reset(q);       // 큐비트 초기 상태로 되돌림
+								return result;  // 측정 결과 반환
+							}
+						}
+						```
+
+						---
+                        
+                        ## 결과(50번 반복)
+                        [Image]
+                        
+                        ---
+                        
+                        ## 예시2: Grover 알고리즘
+                        ```Q# [|5-12|14-20|41-44]
+                        open Microsoft.Quantum.Intrinsic;
+                        open Microsoft.Quantum.Canon;
+                        open Microsoft.Quantum.Measurement;
+
+                        operation Oracle(targetQubits : Qubit[]) : Unit is Adj + Ctl {
+                            // 정답은 "10" (첫 번째 큐비트는 1, 두 번째는 0)
+                            within {
+                                X(targetQubits[1]); // 두 번째 큐비트 0 조건 만들기 위해 X
+                            } apply {
+                                Controlled Z([targetQubits[0], targetQubits[1]], targetQubits[2]);
+                            }
+                        }
+
+                        operation Diffuser(qubits : Qubit[]) : Unit {
+                            ApplyToEach(H, qubits);
+                            ApplyToEach(X, qubits);
+                            Controlled Z([qubits[0]], qubits[1]);
+                            ApplyToEach(X, qubits);
+                            ApplyToEach(H, qubits);
+                        }
+
+                        operation GroverSearch() : Result[] {
+                            use qubits = Qubit[3]; // 2비트 + 1개의 작업용 큐비트
+
+                            let target = qubits[0..1];
+                            let ancilla = qubits[2];
+
+                            // 작업용 큐비트(ancilla)를 |-⟩ 상태로 초기화
+                            H(ancilla);
+                            Z(ancilla);
+
+                            // 상태 초기화
+                            ApplyToEach(H, target);
+
+                            // Oracle 적용
+                            Oracle(qubits);
+
+                            // Diffuser 적용
+                            Diffuser(target);
+
+                            // 측정 후 결과 반환
+                            let result0 = MResetZ(target[0]);
+                            let result1 = MResetZ(target[1]);
+                            Reset(ancilla);
+
+                            return [result0, result1];
+                        }
+                        ```
+                        
+                        ---
+                        
+                        ## 결과(100번 반복)
+                        [Image]
+                        
+                        ---
+                        
+                        ## 소감
+                        
+                        책을 읽고 얻은 양자론적 직관을 활용하여 양자 컴퓨팅을 공부하니 이해가 잘 된 것 같다.
+					</textarea>
+				</section>
 			</div>
 		</div>
 
@@ -38,3 +145,4 @@
 		</script>
 	</body>
 </html>
+
