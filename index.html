@@ -20,7 +20,7 @@
                     <textarea data-template>
                     
                     
-# Q#으로 양자 컴퓨팅을 해보자
+# Q#으로 양자 컴퓨팅을 해보자 <!-- .element: class="r-fit-text" -->
 ### 30206 김주원
 
 ---
@@ -48,28 +48,29 @@
 
 ```Q# [|2|3|4|6]
 operation MeasureHadamard() : Result {
-    using (q = Qubit()) {
-        H(q);           // Hadamard 게이트 적용 (|0⟩ → 중첩 상태)
-        let result = M(q); // 측정 (0 또는 1 결과 나옴)
-        Reset(q);       // 큐비트 초기 상태로 되돌림
-        return result;  // 측정 결과 반환
-    }
+    use q = Qubit();
+    H(q);              // Hadamard 게이트 적용 (|0⟩ → 중첩 상태)
+    let result = M(q); // 관측 (0 또는 1)
+    Reset(q);          // 큐비트 초기 상태로 되돌림
+    return result;     // 측정 결과 반환
 }
 ```
 
 ---
 
 ## 결과(50번 반복)
-[Image]
+![](/assets/image1.jpg)
 
 ---
 
 ## 예시2: Grover 알고리즘
-```Q# [|5-12|14-20|41-44]
+정답이 관측될 확률을 높인다
+```Q# [|5-13|15-22|43-48]
 open Microsoft.Quantum.Intrinsic;
 open Microsoft.Quantum.Canon;
 open Microsoft.Quantum.Measurement;
 
+// 정답일 경우 - 부호 부여 (위상을 뒤집는다)
 operation Oracle(targetQubits : Qubit[]) : Unit is Adj + Ctl {
     // 정답은 "10" (첫 번째 큐비트는 1, 두 번째는 0)
     within {
@@ -79,6 +80,7 @@ operation Oracle(targetQubits : Qubit[]) : Unit is Adj + Ctl {
     }
 }
 
+// 뒤집힌 위상을 강화한다 (평균에 대해 반사)
 operation Diffuser(qubits : Qubit[]) : Unit {
     ApplyToEach(H, qubits);
     ApplyToEach(X, qubits);
@@ -118,7 +120,7 @@ operation GroverSearch() : Result[] {
 ---
 
 ## 결과(100번 반복)
-[Image]
+![](./assets/image2.jpg)
 
 ---
 
